@@ -33,7 +33,8 @@ public class CommentaireApiController {
     public CommentaireResponse findById(@PathVariable String id) {
         Commentaire commentaire = this.repository.findById(id).orElseThrow(NotFoundException::new);
         // Produit produit = this.produitRepository.findById(commentaire.getProduitId()).orElseThrow(NotFoundException::new);
-        ProduitResponse produit = this.restTemplate.getForObject("http://localhost:8081/api/produit/native/" + commentaire.getProduitId(), ProduitResponse.class);
+        // ProduitResponse produit = this.restTemplate.getForObject("http://localhost:8081/api/produit/native/" + commentaire.getProduitId(), ProduitResponse.class);
+        ProduitResponse produit = this.restTemplate.getForObject("lb://produit-service/api/produit/native/" + commentaire.getProduitId(), ProduitResponse.class);
         CommentaireResponse resp = new CommentaireResponse();
 
         BeanUtils.copyProperties(commentaire, resp);
@@ -62,7 +63,8 @@ public class CommentaireApiController {
         // if (optProduit.isEmpty() || !optProduit.get().isNotable()) {
         //     throw new BadRequestException();
         // }
-        ProduitResponse produit = this.restTemplate.getForObject("http://localhost:8081/api/produit/native/" + request.getProduitId(), ProduitResponse.class);
+        // ProduitResponse produit = this.restTemplate.getForObject("http://localhost:8081/api/produit/native/" + request.getProduitId(), ProduitResponse.class);
+        ProduitResponse produit = this.restTemplate.getForObject("lb://produit-service/api/produit/native/" + request.getProduitId(), ProduitResponse.class);
         
         if (produit == null || !produit.isNotable()) {
             throw new BadRequestException();

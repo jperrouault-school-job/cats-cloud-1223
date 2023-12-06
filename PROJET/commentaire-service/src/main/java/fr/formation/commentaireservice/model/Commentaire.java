@@ -15,6 +15,8 @@ public class Commentaire {
     private String id;
 
     private String text;
-    private int note;
+    private int noteQualite;
+    private int noteQualitePrix;
+    private int noteFacilite;
     private String produitId;
 }

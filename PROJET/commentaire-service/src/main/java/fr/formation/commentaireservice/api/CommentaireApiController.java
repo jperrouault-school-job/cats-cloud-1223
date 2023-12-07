@@ -3,6 +3,7 @@ package fr.formation.commentaireservice.api;
 import java.util.List;
 
 import org.springframework.beans.BeanUtils;
+import org.springframework.cloud.client.circuitbreaker.CircuitBreakerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -28,13 +29,21 @@ import lombok.RequiredArgsConstructor;
 public class CommentaireApiController {
     private final CommentaireRepository repository;
     private final RestTemplate restTemplate;
-
+    private final CircuitBreakerFactory circuitBreakerFactory;
+    
     @GetMapping("/{id}")
     public CommentaireResponse findById(@PathVariable String id) {
         Commentaire commentaire = this.repository.findById(id).orElseThrow(NotFoundException::new);
         // Produit produit = this.produitRepository.findById(commentaire.getProduitId()).orElseThrow(NotFoundException::new);
         // ProduitResponse produit = this.restTemplate.getForObject("http://localhost:8081/api/produit/native/" + commentaire.getProduitId(), ProduitResponse.class);
-        ProduitResponse produit = this.restTemplate.getForObject("lb://produit-service/api/produit/native/" + commentaire.getProduitId(), ProduitResponse.class);
+        // ProduitResponse produit = this.restTemplate.getForObject("lb://produit-service/api/produit/native/" + commentaire.getProduitId(), ProduitResponse.class);
+        
+        ProduitResponse produit = this.circuitBreakerFactory.create("produitService").run(
+            () -> this.restTemplate.getForObject("lb://produit-service/api/produit/native/" + commentaire.getProduitId(), ProduitResponse.class)
+            ,
+            t -> ProduitResponse.builder().name("not found").build()
+        );
+        
         CommentaireResponse resp = new CommentaireResponse();
 
         BeanUtils.copyProperties(commentaire, resp);
@@ -64,8 +73,14 @@ public class CommentaireApiController {
         //     throw new BadRequestException();
         // }
         // ProduitResponse produit = this.restTemplate.getForObject("http://localhost:8081/api/produit/native/" + request.getProduitId(), ProduitResponse.class);
-        ProduitResponse produit = this.restTemplate.getForObject("lb://produit-service/api/produit/native/" + request.getProduitId(), ProduitResponse.class);
+        // ProduitResponse produit = this.restTemplate.getForObject("lb://produit-service/api/produit/native/" + request.getProduitId(), ProduitResponse.class);
         
+        ProduitResponse produit = this.circuitBreakerFactory.create("produitService").run(
+            () -> this.restTemplate.getForObject("lb://produit-service/api/produit/native/" + request.getProduitId(), ProduitResponse.class)
+            ,
+            t -> ProduitResponse.builder().build()
+        );
+
         if (produit == null || !produit.isNotable()) {
             throw new BadRequestException();
         }

@@ -1,0 +1,22 @@
+{
+	"folders": [
+		{
+			"path": "rappels-spring"
+		},
+		{
+			"name": "produit-service",
+			"path": "produit-service"
+		},
+		{
+			"name": "commentaire-service",
+			"path": "commentaire-service"
+		},
+		{
+			"name": "discovery-server",
+			"path": "discovery-server"
+		}
+	],
+	"settings": {
+		"java.configuration.updateBuildConfiguration": "interactive"
+	}
+}

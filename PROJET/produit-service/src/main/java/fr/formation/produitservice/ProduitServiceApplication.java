@@ -1,6 +1,7 @@
 package fr.formation.produitservice;
 
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -17,10 +18,18 @@ public class ProduitServiceApplication {
         SpringApplication.run(ProduitServiceApplication.class, args);
     }
 
-    @Bean //("autreChose")
+    // @Bean //("autreChose")
     Consumer<String> onTopicDemo() {
         return evt -> {
             log.debug("Message reçu : {}", evt);
+        };
+    }
+    
+    @Bean
+    Function<String, String> onTopicDemoUppercase() {
+        return evt -> {
+            log.debug("Message reçu (uppercase) : {}", evt);
+            return evt.toUpperCase();
         };
     }
 }

@@ -56,6 +56,7 @@ public class ProduitApiController {
     }
 
     @GetMapping("/native/{id}")
+    // @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ProduitNativeResponse findNativeById(@PathVariable String id) {
         Produit produit = this.repository.findById(id).orElseThrow(NotFoundException::new);
         ProduitNativeResponse resp = new ProduitNativeResponse();

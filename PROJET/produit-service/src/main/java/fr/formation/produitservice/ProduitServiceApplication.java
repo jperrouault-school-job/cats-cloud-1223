@@ -18,7 +18,7 @@ public class ProduitServiceApplication {
         SpringApplication.run(ProduitServiceApplication.class, args);
     }
 
-    @Bean //("autreChose")
+    // @Bean //("autreChose")
     Consumer<String> onTopicDemo() {
         return evt -> {
             log.debug("Message reçu : {}", evt);

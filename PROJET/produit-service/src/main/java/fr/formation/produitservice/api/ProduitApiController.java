@@ -3,6 +3,7 @@ package fr.formation.produitservice.api;
 import java.util.List;
 
 import org.springframework.beans.BeanUtils;
+import org.springframework.cloud.stream.function.StreamBridge;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import fr.formation.produitservice.command.CreateProduitCommand;
 import fr.formation.produitservice.exception.NotFoundException;
 import fr.formation.produitservice.feignclient.CommentaireFeignClient;
 import fr.formation.produitservice.model.Produit;
@@ -28,6 +30,7 @@ import lombok.RequiredArgsConstructor;
 public class ProduitApiController {
     private final ProduitRepository repository;
     private final CommentaireFeignClient commentaireFeignClient;
+    private final StreamBridge streamBridge;
 
     @GetMapping
     public List<ProduitResponse> findAll() {
@@ -74,6 +77,13 @@ public class ProduitApiController {
         BeanUtils.copyProperties(request, produit);
 
         this.repository.save(produit);
+
+        this.streamBridge.send("cqrs.produit.created", CreateProduitCommand.builder()
+            .id(produit.getId())
+            .name(produit.getName())
+            .price(produit.getPrice())
+            .build()
+        );
 
         return produit.getId();
     }

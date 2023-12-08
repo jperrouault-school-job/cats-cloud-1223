@@ -3,8 +3,10 @@ package fr.formation.commentaireservice.eventconsumer;
 import java.util.Optional;
 import java.util.function.Consumer;
 
+import org.springframework.cloud.stream.function.StreamBridge;
 import org.springframework.stereotype.Component;
 
+import fr.formation.commentaireservice.command.CreateCommentaireAcceptedCommand;
 import fr.formation.commentaireservice.event.CommentaireAcceptedEvent;
 import fr.formation.commentaireservice.model.Commentaire;
 import fr.formation.commentaireservice.model.Commentaire.State;
@@ -20,6 +22,7 @@ import reactor.core.publisher.Sinks;
 public class CommentaireAcceptedEventConsumer implements Consumer<CommentaireAcceptedEvent> {
     private final CommentaireRepository repository;
     private final KafkaWaiterService kafkaWaiterService;
+    private final StreamBridge streamBridge;
 
     @Override
     public void accept(CommentaireAcceptedEvent evt) {
@@ -35,6 +38,16 @@ public class CommentaireAcceptedEventConsumer implements Consumer<CommentaireAcc
 
         commentaire.setState(State.OK);
         this.repository.save(commentaire);
+
+        this.streamBridge.send("cqrs.commentaire.created", CreateCommentaireAcceptedCommand.builder()
+            .id(commentaire.getId())
+            .text(commentaire.getText())
+            .noteQualite(commentaire.getNoteQualite())
+            .noteQualitePrix(commentaire.getNoteQualitePrix())
+            .noteFacilite(commentaire.getNoteFacilite())
+            .produitId(commentaire.getProduitId())
+            .build()
+        );
 
         this.kafkaWaiterService.getWaiter().emitValue(true, Sinks.EmitFailureHandler.FAIL_FAST);
     }

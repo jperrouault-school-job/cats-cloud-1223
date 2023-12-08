@@ -22,6 +22,10 @@
 		{
 			"name": "query-service",
 			"path": "query-service"
+		},
+		{
+			"name": "gateway",
+			"path": "gateway"
 		}
 	],
 	"settings": {

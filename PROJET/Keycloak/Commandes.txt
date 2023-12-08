@@ -1,0 +1,22 @@
+# Exécuter un container KeyCloak
+docker run -d --name keycloak -p 8500:8080 -e KEYCLOAK_ADMIN=admin -e KEYCLOAK_ADMIN_PASSWORD=admin quay.io/keycloak/keycloak start-dev
+
+# Exécuter KeyCloak (téléchargé)
+# Depuis le répertoire bin
+kc.bat start-dev --http-port 8500
+
+# Informations pour Postman Authentication OAuth2 / Authorization Code
+CALLBACK URL
+https://oauth.pstmn.io/v1/browser-callback
+
+URL AUTH
+http://localhost:8500/realms/cats/protocol/openid-connect/auth
+
+ACCESS TOKEN
+http://localhost:8500/realms/cats/protocol/openid-connect/token
+
+CLIENT ID
+cats-app
+
+SECRET
+XXXX

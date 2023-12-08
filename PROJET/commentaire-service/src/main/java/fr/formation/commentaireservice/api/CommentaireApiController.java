@@ -25,6 +25,7 @@ import fr.formation.commentaireservice.response.CommentaireResponse;
 import fr.formation.commentaireservice.response.ProduitResponse;
 import fr.formation.commentaireservice.service.KafkaWaiterService;
 import lombok.RequiredArgsConstructor;
+import reactor.core.publisher.Mono;
 import reactor.core.publisher.Sinks;
 
 @RestController
@@ -105,10 +106,31 @@ public class CommentaireApiController {
             .build()
         );
 
+        
         Boolean result = this.kafkaWaiterService.getWaiter().asMono().block();
-
+        
         this.kafkaWaiterService.setWaiter(Sinks.one());
-
+        
         return commentaire.getId();
+    }
+
+    // Exemple avec Spring Web Reactive (webflux)
+    @PostMapping("/webflux")
+    @ResponseStatus(HttpStatus.CREATED)
+    public Mono<Boolean> createWF(@RequestBody CreateCommentaireRequest request) {
+        Commentaire commentaire = new Commentaire();
+
+        BeanUtils.copyProperties(request, commentaire);
+        commentaire.setState(State.WAITING);
+
+        this.repository.save(commentaire);
+
+        this.streamBridge.send("commentaire.created", CreateCommentaireCommand.builder()
+            .commentaireId(commentaire.getId())
+            .produitId(request.getProduitId())
+            .build()
+        );
+
+        return this.kafkaWaiterService.getWaiter().asMono();
     }
 }

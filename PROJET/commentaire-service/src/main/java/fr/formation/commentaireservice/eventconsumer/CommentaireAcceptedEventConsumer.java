@@ -9,14 +9,17 @@ import fr.formation.commentaireservice.event.CommentaireAcceptedEvent;
 import fr.formation.commentaireservice.model.Commentaire;
 import fr.formation.commentaireservice.model.Commentaire.State;
 import fr.formation.commentaireservice.repository.CommentaireRepository;
+import fr.formation.commentaireservice.service.KafkaWaiterService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import reactor.core.publisher.Sinks;
 
 @Component("onCommentaireAccepted")
 @RequiredArgsConstructor
 @Log4j2
 public class CommentaireAcceptedEventConsumer implements Consumer<CommentaireAcceptedEvent> {
     private final CommentaireRepository repository;
+    private final KafkaWaiterService kafkaWaiterService;
 
     @Override
     public void accept(CommentaireAcceptedEvent evt) {
@@ -32,5 +35,7 @@ public class CommentaireAcceptedEventConsumer implements Consumer<CommentaireAcc
 
         commentaire.setState(State.OK);
         this.repository.save(commentaire);
+
+        this.kafkaWaiterService.getWaiter().emitValue(true, Sinks.EmitFailureHandler.FAIL_FAST);
     }
 }

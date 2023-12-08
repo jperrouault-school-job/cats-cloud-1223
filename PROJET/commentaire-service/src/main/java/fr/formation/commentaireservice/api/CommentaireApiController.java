@@ -23,7 +23,9 @@ import fr.formation.commentaireservice.repository.CommentaireRepository;
 import fr.formation.commentaireservice.request.CreateCommentaireRequest;
 import fr.formation.commentaireservice.response.CommentaireResponse;
 import fr.formation.commentaireservice.response.ProduitResponse;
+import fr.formation.commentaireservice.service.KafkaWaiterService;
 import lombok.RequiredArgsConstructor;
+import reactor.core.publisher.Sinks;
 
 @RestController
 @RequestMapping("/api/commentaire")
@@ -33,6 +35,7 @@ public class CommentaireApiController {
     private final RestTemplate restTemplate;
     private final CircuitBreakerFactory circuitBreakerFactory;
     private final StreamBridge streamBridge;
+    private final KafkaWaiterService kafkaWaiterService;
     
     @GetMapping("/{id}")
     public CommentaireResponse findById(@PathVariable String id) {
@@ -101,6 +104,10 @@ public class CommentaireApiController {
             .produitId(request.getProduitId())
             .build()
         );
+
+        Boolean result = this.kafkaWaiterService.getWaiter().asMono().block();
+
+        this.kafkaWaiterService.setWaiter(Sinks.one());
 
         return commentaire.getId();
     }

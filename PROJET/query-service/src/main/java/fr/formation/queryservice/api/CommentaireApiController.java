@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import fr.formation.queryservice.annotation.SecurityClient;
 import fr.formation.queryservice.exception.NotFoundException;
 import fr.formation.queryservice.model.Commentaire;
 import fr.formation.queryservice.repository.CommentaireRepository;
@@ -19,6 +20,7 @@ public class CommentaireApiController {
     private final CommentaireRepository repository;
     
     @GetMapping("/{id}")
+    @SecurityClient
     public CommentaireResponse findById(@PathVariable String id) {
         Commentaire commentaire = this.repository.findById(id).orElseThrow(NotFoundException::new);
         CommentaireResponse resp = new CommentaireResponse();
